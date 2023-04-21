@@ -4,11 +4,8 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>4268a61e-aea0-4df6-bee9-7062cd8ff2c5</UserSecretsId>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.16" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ViberBot.Application\ViberBot.Application.csproj" />

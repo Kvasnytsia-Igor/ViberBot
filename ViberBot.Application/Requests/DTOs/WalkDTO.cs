@@ -1,4 +1,4 @@
-﻿namespace Application.Queries.DTOs
+﻿namespace Application.Requsts.DTOs
 {
     public class WalkDTO
     {
