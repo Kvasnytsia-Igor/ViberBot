@@ -1,36 +1,39 @@
-﻿using Application.Models;
+﻿using Application.DataModels;
 using Application.Requsts.DTOs;
 using Application.Services;
 using MediatR;
+using ViberBot.Application.Common;
+using ViberBot.Application.Services;
+using ViberBot.Application;
+using ViberBot.Application.Requests.DTOs;
+using ViberBot.Application.Responses.ViberApiResponses;
 
 namespace Application.Requsts.Handlers;
 
 public class WalksListHandler : IRequestHandler<WalksListRequest>
 {
     private readonly TrackService _trackService;
-    public WalksListHandler(TrackService trackService)
+    private readonly MessagesService _messagesService;
+    public WalksListHandler(TrackService trackService, MessagesService messagesService)
     {
         _trackService = trackService;
+        _messagesService = messagesService;
     }
     public async Task Handle(WalksListRequest request, CancellationToken cancellationToken)
     {
         List<Walk> walks = await _trackService.GenerateWalksAsync(request.IMEI);
-        List<WalkDTO> walkDTOs = MapWithDTO(walks.Take(request.TopCount).ToList());
-
-
+        walks = walks
+            .OrderByDescending(a => a.DistanceKilometers)
+            .Take(request.TopCount)
+            .ToList();
+        await _messagesService.SendWithResponse<SendMessageResponse>(
+           ViberRequestTemplates.WalksTableList(new WalksTableDTO
+           {
+               IMEI = request.IMEI,
+               Walks = walks,
+               ReceiverId = request.ReceiverId,
+           }), 
+           $"{URLs.BASE_VIBER}/send_message");
     }
-    private static List<WalkDTO> MapWithDTO(List<Walk> walks)
-    {
-        List<WalkDTO> result = new();
-        for (int i = 0; walks.Count > i; i++)
-        {
-            result.Add(new WalkDTO
-            {
-                Sequence = i + 1,
-                DistanceKilometers = walks[i].DistanceKilometers,
-                DurationMinutes = walks[i].DurationMinutes,
-            });
-        }
-        return result;
-    }
+    
 }

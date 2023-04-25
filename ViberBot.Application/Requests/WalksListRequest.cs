@@ -2,5 +2,5 @@
 
 namespace Application.Requsts
 {
-    public record WalksListRequest(string IMEI, int TopCount) : IRequest;
+    public record WalksListRequest(string ReceiverId, string IMEI, int TopCount) : IRequest;
 }

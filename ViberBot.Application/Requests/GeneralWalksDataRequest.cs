@@ -1,6 +1,4 @@
 ﻿using MediatR;
 
-namespace Application.Requsts
-{
-    public record GeneralWalksDataRequest(string IMEI, string Receiver) : IRequest;
-}
+namespace Application.Requsts;
+public record GeneralWalksDataRequest(string ReceiverId, string IMEI) : IRequest;

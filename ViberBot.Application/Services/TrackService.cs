@@ -1,5 +1,5 @@
 ﻿using Application.Data;
-using Application.Models;
+using Application.DataModels;
 using Application.Utilities;
 using Microsoft.EntityFrameworkCore;
 

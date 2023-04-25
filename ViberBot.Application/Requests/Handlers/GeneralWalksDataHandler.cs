@@ -1,4 +1,4 @@
-﻿using Application.Models;
+﻿using Application.DataModels;
 using Application.Requsts.DTOs;
 using Application.Services;
 using MediatR;
@@ -22,15 +22,15 @@ public class GeneralWalksDataHandler : IRequestHandler<GeneralWalksDataRequest>
         if (!await _trackService.IsExistIMEIAsync(request.IMEI))
         {
             await _messagesService.Send(
-                ResponseTemplates.AbsentMessage(request.Receiver),
+                ViberRequestTemplates.AbsentMessage(request.ReceiverId),
                 $"{URLs.BASE_VIBER}/send_message");
             return;
         }
         List<Walk> walks = await _trackService.GenerateWalksAsync(request.IMEI);
-        await _messagesService.SendWithResponse(
-            ResponseTemplates.GeneralInfo(new WalksDataDTO
+        await _messagesService.Send(
+            ViberRequestTemplates.GeneralInfoWithKeyboard(new WalksDataDTO
             {
-                ReceiverId = request.Receiver,
+                ReceiverId = request.ReceiverId,
                 IMEI = request.IMEI,
                 WalksCount = walks.Count,
                 TotalDistanceKM = walks.Sum(a => a.DistanceKilometers),

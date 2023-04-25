@@ -1,11 +1,10 @@
-﻿using Application.Models;
-using Application.Requsts;
+﻿using Application.Requsts;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using ViberBot.API.RequestEvent;
 using ViberBot.API.Validators;
-using ViberBot.Application;
-using ViberBot.Application.Common;
-using ViberBot.Application.Services;
+using ViberBot.Application.Requests;
+using ViberBot.Application.Responses;
 
 namespace ViberBot.API.Controllers;
 
@@ -14,11 +13,11 @@ namespace ViberBot.API.Controllers;
 public class ViberController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly MessagesService _messagesService;
-    public ViberController(IMediator mediator, MessagesService messagesService)
+    private readonly InputValidator _inputValidator;
+    public ViberController(IMediator mediator, InputValidator inputValidator)
     {
         _mediator = mediator;
-        _messagesService = messagesService;
+        _inputValidator = inputValidator;
     }
     [HttpPost("webhook")]
     public async Task<ActionResult> Webhook(ViberEvent viberEvent)
@@ -27,46 +26,38 @@ public class ViberController : ControllerBase
         {
             return BadRequest();
         }
+        await Console.Out.WriteLineAsync(viberEvent.Event);
         return viberEvent.Event switch
         {
-            "conversation_started" => ConversationStarted(),
+            "conversation_started" => Ok(new WelcomeMessage()),
             "message" => await Message(viberEvent),
             _ => Ok(),
         };
     }
-    private ActionResult ConversationStarted()
-    {
-        return Ok(ResponseTemplates.WelcomeMessage());
-    }
     private async Task<ActionResult> Message(ViberEvent viberEvent)
     {
-        if (!IMEI_Validator.ValidateIMEI(viberEvent.Message.Text))
+        string text = viberEvent.Message.Text;
+        if (_inputValidator.ValidateIMEI(text))
         {
-            await _messagesService.SendWithResponse(
-                ResponseTemplates.InvalidIMEIMessage(viberEvent.Sender.Id),
-                $"{URLs.BASE_VIBER}/send_message");
+            await _mediator.Send(
+                new GeneralWalksDataRequest(
+                    viberEvent.Sender.Id,
+                    viberEvent.Message.Text));
+        }
+        else if (_inputValidator.ValidateRequest(text))
+        {
+            string[] reqestData = text.Split(new[] { '/' });
+            int topCount = int.Parse(reqestData[2]);
+            await _mediator.Send(
+                new WalksListRequest(
+                    viberEvent.Sender.Id,
+                    reqestData[1],
+                    topCount));
         }
         else
         {
-            await _messagesService.Send(new
-        {
-            IMEI = viberEvent.Message.Text,
-            Receiver = viberEvent.Sender.Id,
-        }, $"{URLs.BASE_URL}/general-walks-data");
+            await _mediator.Send(new InvalidInputRequest(viberEvent.Sender.Id));
         }
-        return Ok();
-    }
-
-    [HttpPost("general-walks-data")]
-    public async Task<ActionResult> GeneralWalksData(GeneralWalksDataRequest request)
-    {
-        await _mediator.Send(request);
-        return Ok();
-    }
-    [HttpPost("walks-list")]
-    public async Task<ActionResult> WalksList(WalksListRequest request)
-    {
-        await _mediator.Send(request);
         return Ok();
     }
 }

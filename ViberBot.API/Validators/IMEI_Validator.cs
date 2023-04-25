@@ -1,21 +1,19 @@
-﻿namespace ViberBot.API.Validators
+﻿using System.Text.RegularExpressions;
+
+namespace ViberBot.API.Validators;
+
+public class InputValidator
 {
-    public class IMEI_Validator
+    private readonly Regex regexIMEI = new(@"^\d{15}$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private readonly Regex regexRequest = new(@"walks_list/\d{15}/\d{1,10}",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    public bool ValidateIMEI(string IMEI)
     {
-        public static bool ValidateIMEI(string IMEI)
-        {
-            if (IMEI.Length != 15)
-            {
-                return false;
-            }
-            foreach (char c in IMEI)
-            {
-                if(!char.IsDigit(c))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
+        return regexIMEI.IsMatch(IMEI);
+    }
+    public  bool ValidateRequest(string request)
+    {
+        return regexRequest.IsMatch(request);
     }
 }

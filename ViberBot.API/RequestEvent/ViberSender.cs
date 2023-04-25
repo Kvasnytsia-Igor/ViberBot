@@ -1,10 +1,9 @@
-﻿namespace ConsoleTest.Models.GetAccountInfo
+﻿namespace ViberBot.API.RequestEvent
 {
-    public class Member
+    public class ViberSender
     {
         public string Id { get; set; } = "";
         public string Name { get; set; } = "";
         public string Avatar { get; set; } = "";
-        public string Role { get; set; } = "";
     }
 }

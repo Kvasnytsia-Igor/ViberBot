@@ -1,4 +1,4 @@
-﻿namespace Application.Models
+﻿namespace Application.DataModels
 {
     public class Walk
     {
